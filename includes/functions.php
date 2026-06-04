@@ -6,10 +6,6 @@
 
 require_once __DIR__ . '/../config/db.php';
 
-// ──────────────────────────────────────────
-//  CEK LOGIN & REDIRECT OTOMATIS
-// ──────────────────────────────────────────
-
 function cekLoginMahasiswa() {
     if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'mahasiswa') {
         header("Location: " . BASE_URL . "/auth/login.php");
@@ -24,7 +20,6 @@ function cekLoginAdmin() {
     }
 }
 
-// Redirect setelah login sesuai role
 function redirectSetelahLogin() {
     if (!isset($_SESSION['user_id'])) {
         header("Location: " . BASE_URL . "/auth/login.php");
@@ -38,16 +33,11 @@ function redirectSetelahLogin() {
     exit();
 }
 
-// Kalau sudah login, jangan bisa akses login/register lagi
 function cekSudahLogin() {
     if (isset($_SESSION['user_id'])) {
         redirectSetelahLogin();
     }
 }
-
-// ──────────────────────────────────────────
-//  FORMAT TANGGAL
-// ──────────────────────────────────────────
 
 function formatTanggal($tanggal) {
     if (!$tanggal) return '-';
@@ -61,20 +51,12 @@ function formatTanggal($tanggal) {
     return "$d {$bulan[$m]} $y";
 }
 
-// ──────────────────────────────────────────
-//  HITUNG SISA HARI
-// ──────────────────────────────────────────
-
 function sisaHari($tanggal_expired) {
     $today   = new DateTime(date('Y-m-d'));
     $expired = new DateTime($tanggal_expired);
     $diff    = $today->diff($expired);
     return $expired >= $today ? (int)$diff->days : -(int)$diff->days;
 }
-
-// ──────────────────────────────────────────
-//  UPDATE STATUS PEMINJAMAN OTOMATIS
-// ──────────────────────────────────────────
 
 function updateStatusPeminjaman($pdo) {
     $pdo->exec("
@@ -105,10 +87,6 @@ function updateStatusPeminjaman($pdo) {
     ");
 }
 
-// ──────────────────────────────────────────
-//  POIN & BADGE
-// ──────────────────────────────────────────
-
 function tambahPoin($pdo, $user_id, $poin) {
     $stmt = $pdo->prepare("UPDATE users SET poin = poin + ? WHERE id = ?");
     $stmt->execute([$poin, $user_id]);
@@ -127,21 +105,19 @@ function cekBadge($pdo, $user_id) {
             $cek = $pdo->prepare("SELECT id FROM user_badge WHERE user_id = ? AND badge_id = ?");
             $cek->execute([$user_id, $badge['id']]);
             if (!$cek->fetch()) {
-                $ins = $pdo->prepare("INSERT INTO user_badge (user_id, badge_id) VALUES (?, ?)");
-                $ins->execute([$user_id, $badge['id']]);
-                kirimNotifikasi($pdo, $user_id, "🏆 Kamu mendapat badge baru: {$badge['nama']}!", 'info');
+                $newUbId = (int)$pdo->query("SELECT COALESCE(MAX(id),0)+1 FROM user_badge")->fetchColumn();
+                $ins = $pdo->prepare("INSERT INTO user_badge (id, user_id, badge_id) VALUES (?, ?, ?)");
+                $ins->execute([$newUbId, $user_id, $badge['id']]);
+                kirimNotifikasi($pdo, $user_id, "Kamu mendapat badge baru: {$badge['nama']}!", 'info');
             }
         }
     }
 }
 
-// ──────────────────────────────────────────
-//  NOTIFIKASI
-// ──────────────────────────────────────────
-
 function kirimNotifikasi($pdo, $user_id, $pesan, $tipe = 'info') {
-    $stmt = $pdo->prepare("INSERT INTO notifikasi (user_id, pesan, tipe) VALUES (?, ?, ?)");
-    $stmt->execute([$user_id, $pesan, $tipe]);
+    $newNotifId = (int)$pdo->query("SELECT COALESCE(MAX(id),0)+1 FROM notifikasi")->fetchColumn();
+    $stmt = $pdo->prepare("INSERT INTO notifikasi (id, user_id, pesan, tipe) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$newNotifId, $user_id, $pesan, $tipe]);
 }
 
 function jumlahNotifBelumDibaca($pdo, $user_id) {
@@ -149,10 +125,6 @@ function jumlahNotifBelumDibaca($pdo, $user_id) {
     $stmt->execute([$user_id]);
     return (int)$stmt->fetchColumn();
 }
-
-// ──────────────────────────────────────────
-//  RATING & BINTANG
-// ──────────────────────────────────────────
 
 function ratingRataRata($pdo, $buku_id) {
     $stmt = $pdo->prepare("SELECT AVG(rating) as rata FROM review WHERE buku_id = ? AND status = 'tampil'");
@@ -170,10 +142,6 @@ function tampilBintang($rating) {
     }
     return $html;
 }
-
-// ──────────────────────────────────────────
-//  CEK STATUS PINJAM USER
-// ──────────────────────────────────────────
 
 function cekPinjamanAktif($pdo, $user_id, $buku_id) {
     $stmt = $pdo->prepare("
@@ -196,10 +164,6 @@ function cekSudahReview($pdo, $user_id, $buku_id) {
     $stmt->execute([$user_id, $buku_id]);
     return $stmt->fetch();
 }
-
-// ──────────────────────────────────────────
-//  SANITASI OUTPUT
-// ──────────────────────────────────────────
 
 function e($str) {
     return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
