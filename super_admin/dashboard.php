@@ -26,23 +26,28 @@ $user_baru       = $pdo->query("SELECT COUNT(*) FROM users WHERE role='mahasiswa
 $admin_baru      = $pdo->query("SELECT COUNT(*) FROM users WHERE role='admin' AND MONTH(created_at)=MONTH(NOW()) AND YEAR(created_at)=YEAR(NOW())")->fetchColumn();
 $pinjam_hari_ini = $pdo->query("SELECT COUNT(*) FROM peminjaman WHERE DATE(created_at)=CURDATE()")->fetchColumn();
 
+// FIX: TiDB-compatible GROUP BY (semua kolom di SELECT harus ada di GROUP BY)
 $grafik_raw = $pdo->query("
-    SELECT DATE_FORMAT(created_at,'%b') AS bln, COUNT(*) AS total
+    SELECT DATE_FORMAT(created_at,'%b') AS bln, COUNT(*) AS total,
+           YEAR(created_at) AS yr, MONTH(created_at) AS mn
     FROM peminjaman WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-    GROUP BY YEAR(created_at), MONTH(created_at) ORDER BY created_at ASC LIMIT 6
+    GROUP BY YEAR(created_at), MONTH(created_at), DATE_FORMAT(created_at,'%b')
+    ORDER BY yr ASC, mn ASC LIMIT 6
 ")->fetchAll();
 $max_graf = max(array_column($grafik_raw,'total') ?: [1]);
 
+// FIX: TiDB-compatible GROUP BY untuk top_buku
 $top_buku = $pdo->query("
-    SELECT b.judul, b.genre, COUNT(p.id) AS total
+    SELECT b.id, b.judul, b.genre, COUNT(p.id) AS total
     FROM buku b LEFT JOIN peminjaman p ON p.buku_id=b.id
-    GROUP BY b.id ORDER BY total DESC LIMIT 5
+    GROUP BY b.id, b.judul, b.genre ORDER BY total DESC LIMIT 5
 ")->fetchAll();
 
 $top_users = $pdo->query("
     SELECT nama, poin FROM users WHERE role='mahasiswa' ORDER BY poin DESC LIMIT 5
 ")->fetchAll();
 
+// FIX: TiDB-compatible GROUP BY untuk genre_stats
 $genre_stats = $pdo->query("
     SELECT b.genre, COUNT(*) AS total FROM peminjaman p JOIN buku b ON p.buku_id=b.id
     GROUP BY b.genre ORDER BY total DESC LIMIT 6
@@ -53,7 +58,7 @@ $admin_list = $pdo->query("
 ")->fetchAll();
 
 $recent_pinjam = $pdo->query("
-    SELECT p.*, u.nama AS user_nama, b.judul, b.genre
+    SELECT p.id, p.status, p.created_at, u.nama AS user_nama, b.judul, b.genre
     FROM peminjaman p JOIN users u ON p.user_id=u.id JOIN buku b ON p.buku_id=b.id
     ORDER BY p.created_at DESC LIMIT 6
 ")->fetchAll();
