@@ -30,8 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pinjam_id'])) {
             $durasi = $dur->fetchColumn() ?: 7;
             $tgl_pinjam  = date('Y-m-d');
             $tgl_expired = date('Y-m-d', strtotime("+$durasi days"));
-            $pdo->prepare("INSERT INTO peminjaman (user_id, buku_id, tanggal_pinjam, tanggal_expired, status) VALUES (?,?,?,?,'aktif')")
-                ->execute([$user_id, $buku_id, $tgl_pinjam, $tgl_expired]);
+            $newPinjamId = (int)$pdo->query("SELECT COALESCE(MAX(id),0)+1 FROM peminjaman")->fetchColumn();
+            $pdo->prepare("INSERT INTO peminjaman (id,user_id,buku_id,tanggal_pinjam,tanggal_expired,status,created_at) VALUES (?,?,?,?,?,'aktif',NOW())")
+                ->execute([$newPinjamId,$user_id,$buku_id,$tgl_pinjam,$tgl_expired]);
             $pdo->prepare("UPDATE buku SET stok = stok - 1, total_dipinjam = total_dipinjam + 1 WHERE id = ?")
                 ->execute([$buku_id]);
             tambahPoin($pdo, $user_id, 5);
@@ -56,16 +57,16 @@ if ($search) {
     $params[] = "%$search%"; $params[] = "%$search%";
 }
 
-// FIX 1: tambah b.cover di query
 $stmt = $pdo->prepare("
-    SELECT w.*, b.judul, b.penulis, b.genre, b.tipe, b.stok, b.status AS buku_status,
+    SELECT w.id, w.user_id, w.buku_id, w.created_at,
+           b.judul, b.penulis, b.genre, b.tipe, b.stok, b.status AS buku_status,
            b.total_dipinjam, b.cover,
            IFNULL(AVG(r.rating),0) AS avg_rating
     FROM wishlist w
     JOIN buku b ON w.buku_id = b.id
     LEFT JOIN review r ON r.buku_id = b.id AND r.status = 'tampil'
     WHERE " . implode(' AND ', $where) . "
-    GROUP BY w.id
+    GROUP BY w.id, w.user_id, w.buku_id, w.created_at, b.judul, b.penulis, b.genre, b.tipe, b.stok, b.status, b.total_dipinjam, b.cover
     ORDER BY w.created_at DESC
 ");
 $stmt->execute($params);
@@ -157,7 +158,6 @@ body::before {
 .wishlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
 .wish-card { background: rgba(255,255,255,0.25); border: 1px solid rgba(30,58,95,0.08); border-radius: 20px; overflow: hidden; backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); box-shadow: var(--sh); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; position: relative; }
 .wish-card:hover { transform: translateY(-5px); box-shadow: var(--sh-md); }
-/* FIX: tambah overflow:hidden dan position:relative */
 .wish-cover { height: 180px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; font-size: 36px; position: relative; color: #fff; overflow: hidden; }
 .wish-cover-label { font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.55); }
 .wish-tipe-badge { position: absolute; top: 10px; left: 10px; font-size: 9px; font-weight: 900; padding: 3px 9px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; z-index: 3; }
@@ -243,7 +243,6 @@ footer.mhs-footer { position: relative; z-index: 1; text-align: center; padding:
   </div>
 
   <div class="wishlist-grid" id="wishGrid">
-
     <?php if ($wishlist): ?>
       <?php foreach ($wishlist as $i => $w):
         $gw       = $genre_warna[$w['genre']] ?? ['bg' => '#1e3a5f', 'icon' => 'fa-book'];
@@ -255,91 +254,59 @@ footer.mhs-footer { position: relative; z-index: 1; text-align: center; padding:
            data-judul="<?= strtolower(e($w['judul'])) ?>"
            data-penulis="<?= strtolower(e($w['penulis'])) ?>">
 
-        <!-- FIX 2: cover wishlist -->
         <div class="wish-cover" style="background:linear-gradient(135deg,<?= $gw['bg'] ?>,<?= $gw['bg'] ?>99);">
           <?php if(!empty($w['cover'])): ?>
-            <img src="<?= BASE_URL ?>/uploads/covers/<?= e($w['cover']) ?>"
-                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1;" alt="">
+            <img src="<?= BASE_URL ?>/uploads/covers/<?= e($w['cover']) ?>" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1;" alt="">
           <?php else: ?>
             <i class="fas <?= $gw['icon'] ?>" style="font-size:36px;"></i>
             <span class="wish-cover-label"><?= e($w['genre']) ?></span>
           <?php endif; ?>
-
-          <span class="wish-tipe-badge <?= $w['tipe']==='fiksi' ? 'tipe-fiksi' : 'tipe-nonfiksi' ?>">
-            <?= $w['tipe'] ?>
-          </span>
-
+          <span class="wish-tipe-badge <?= $w['tipe']==='fiksi' ? 'tipe-fiksi' : 'tipe-nonfiksi' ?>"><?= $w['tipe'] ?></span>
           <form method="POST" style="display:contents;">
             <input type="hidden" name="hapus_id" value="<?= $w['buku_id'] ?>">
-            <button class="wish-remove" type="submit"
-                    onclick="return confirm('Hapus buku ini dari wishlist?')"
-                    title="Hapus dari Wishlist">
+            <button class="wish-remove" type="submit" onclick="return confirm('Hapus buku ini dari wishlist?')" title="Hapus dari Wishlist">
               <i class="fas fa-times"></i>
             </button>
           </form>
-
-          <span class="wish-date">
-            <i class="fas fa-clock"></i>
-            <?= formatTanggal($w['created_at']) ?>
-          </span>
+          <span class="wish-date"><i class="fas fa-clock"></i><?= formatTanggal($w['created_at']) ?></span>
         </div>
 
         <div class="wish-body">
           <div class="wish-genre-tag"><?= e($w['genre']) ?></div>
           <div class="wish-title"><?= e($w['judul']) ?></div>
           <div class="wish-author"><i class="fas fa-pen-nib" style="font-size:9px;margin-right:3px;"></i><?= e($w['penulis']) ?></div>
-
           <?php if ($rating > 0): ?>
-          <div class="wish-rating">
-            <?= tampilBintang($rating) ?>
-            <span style="color:var(--muted);font-size:10px;"><?= $rating ?></span>
-          </div>
+          <div class="wish-rating"><?= tampilBintang($rating) ?> <span style="color:var(--muted);font-size:10px;"><?= $rating ?></span></div>
           <?php endif; ?>
-
           <div class="stok-dot <?= $tersedia ? 'ada' : 'habis' ?>">
             <i class="fas fa-circle"></i>
             <?= $tersedia ? 'Tersedia &middot; ' . $w['stok'] . ' stok' : 'Stok Habis' ?>
           </div>
-
           <div class="wish-actions">
             <?php if ($dipinjam): ?>
-              <a href="<?= BASE_URL ?>/mahasiswa/baca.php?id=<?= $w['buku_id'] ?>" class="btn-baca-w">
-                <i class="fas fa-book-open"></i> Baca Sekarang
-              </a>
+              <a href="<?= BASE_URL ?>/mahasiswa/baca.php?id=<?= $w['buku_id'] ?>" class="btn-baca-w"><i class="fas fa-book-open"></i> Baca Sekarang</a>
             <?php elseif ($tersedia): ?>
               <form method="POST" style="margin:0;">
                 <input type="hidden" name="pinjam_id" value="<?= $w['buku_id'] ?>">
-                <button type="submit" class="btn-pinjam">
-                  <i class="fas fa-hand-holding"></i> Pinjam Sekarang
-                </button>
+                <button type="submit" class="btn-pinjam"><i class="fas fa-hand-holding"></i> Pinjam Sekarang</button>
               </form>
             <?php else: ?>
-              <a href="<?= BASE_URL ?>/mahasiswa/detail_buku.php?id=<?= $w['buku_id'] ?>" class="btn-antrian">
-                <i class="fas fa-list-ol"></i> Masuk Antrian
-              </a>
+              <a href="<?= BASE_URL ?>/mahasiswa/detail_buku.php?id=<?= $w['buku_id'] ?>" class="btn-antrian"><i class="fas fa-list-ol"></i> Masuk Antrian</a>
             <?php endif; ?>
-            <a href="<?= BASE_URL ?>/mahasiswa/detail_buku.php?id=<?= $w['buku_id'] ?>" class="btn-detail">
-              <i class="fas fa-eye"></i> Lihat Detail
-            </a>
+            <a href="<?= BASE_URL ?>/mahasiswa/detail_buku.php?id=<?= $w['buku_id'] ?>" class="btn-detail"><i class="fas fa-eye"></i> Lihat Detail</a>
           </div>
         </div>
-
       </div>
       <?php endforeach; ?>
-
     <?php else: ?>
       <div class="empty-wish-full">
         <div class="empty-icon"><i class="fas fa-heart-broken"></i></div>
         <h3>Wishlist Masih Kosong</h3>
         <p>Kamu belum menyimpan buku apapun ke wishlist.<br>Jelajahi katalog dan tambahkan buku favoritmu!</p>
-        <a href="<?= BASE_URL ?>/mahasiswa/katalog.php" class="btn-primary-w">
-          <i class="fas fa-book"></i> Jelajahi Katalog
-        </a>
+        <a href="<?= BASE_URL ?>/mahasiswa/katalog.php" class="btn-primary-w"><i class="fas fa-book"></i> Jelajahi Katalog</a>
       </div>
     <?php endif; ?>
-
   </div>
-
 </div>
 
 <footer class="mhs-footer">
