@@ -3,79 +3,8 @@
 //  CloudLibrary Mini — Super Admin: Broadcast
 //  File   : super_admin/broadcast.php
 // ============================================
-session_start();
-require_once '../includes/functions.php';
 
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'super_admin') {
-    header('Location: '.BASE_URL.'/auth/login.php'); exit;
-}
-
-$success = '';
-$error   = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $aksi   = $_POST['aksi'] ?? '';
-
-    if ($aksi === 'broadcast') {
-        $judul   = trim($_POST['judul']   ?? '');
-        $pesan   = trim($_POST['pesan']   ?? '');
-        $target  = $_POST['target']       ?? 'semua';
-        $tipe    = $_POST['tipe']         ?? 'info';
-
-        if (!$judul || !$pesan) {
-            $error = 'Judul dan pesan wajib diisi!';
-        } else {
-            $where = "status = 'aktif'";
-            if ($target === 'mahasiswa') $where .= " AND role = 'mahasiswa'";
-            elseif ($target === 'admin') $where .= " AND role = 'admin'";
-            else $where .= " AND role IN ('mahasiswa','admin')";
-
-            $users = $pdo->query("SELECT id FROM users WHERE $where")->fetchAll(PDO::FETCH_COLUMN);
-
-            if (empty($users)) {
-                $error = 'Tidak ada user aktif untuk dikirim notifikasi.';
-            } else {
-                $stmt = $pdo->prepare("INSERT INTO notifikasi (user_id, judul, pesan, tipe, created_at) VALUES (?, ?, ?, ?, NOW())");
-                $count = 0;
-                foreach ($users as $uid) {
-                    $stmt->execute([$uid, $judul, $pesan, $tipe]);
-                    $count++;
-                }
-                $success = "Broadcast berhasil dikirim ke <strong>$count</strong> pengguna!";
-
-                $pdo->prepare("INSERT INTO broadcast_log (user_id, judul, pesan, target, tipe, jumlah_penerima, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())")
-                    ->execute([$_SESSION['user_id'], $judul, $pesan, $target, $tipe, $count]);
-
-                $pdo->prepare("INSERT INTO activity_log (user_id, role, aksi, detail, ip_address) VALUES (?,?,?,?,?)")
-                    ->execute([$_SESSION['user_id'], 'super_admin', 'Broadcast', "Kirim ke $count pengguna: $judul", $_SERVER['REMOTE_ADDR']]);
-            }
-        }
-    }
-
-    if ($aksi === 'hapus_log') {
-        $lid = (int)($_POST['log_id'] ?? 0);
-        $pdo->prepare("DELETE FROM broadcast_log WHERE id = ?")->execute([$lid]);
-        $success = 'Log broadcast dihapus.';
-    }
-}
-
-$logs = [];
-try {
-    $logs = $pdo->query("
-        SELECT bl.*, u.nama AS pengirim
-        FROM broadcast_log bl
-        JOIN users u ON bl.user_id = u.id
-        ORDER BY bl.created_at DESC LIMIT 20
-    ")->fetchAll();
-} catch(Exception $e) {}
-
-$total_mhs   = $pdo->query("SELECT COUNT(*) FROM users WHERE role='mahasiswa' AND status='aktif'")->fetchColumn();
-$total_admin = $pdo->query("SELECT COUNT(*) FROM users WHERE role='admin' AND status='aktif'")->fetchColumn();
-$total_semua = $total_mhs + $total_admin;
-
-$title = "Broadcast — Super Admin CloudLibrary Mini";
-include '../includes/navbar.php';
-?>
+cat << 'HTMLEOF' >> /home/claude/broadcast.php
 <style>
 body{
   font-family:'Nunito',sans-serif;min-height:100vh;overflow-x:hidden;position:relative;margin:0;
