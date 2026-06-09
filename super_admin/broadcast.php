@@ -86,9 +86,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // ── Ambil riwayat broadcast ──────────────────
 $logs = $pdo->query("SELECT * FROM broadcast_log ORDER BY created_at DESC LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
 
-// ── Helper escape ────────────────────────────
-function e($s) { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); }
-
 // ── Header layout ────────────────────────────
 $pageTitle = 'Broadcast Notifikasi';
 require_once 'partials/header.php';
