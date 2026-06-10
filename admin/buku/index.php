@@ -65,7 +65,6 @@ body::before{
   background: rgba(5, 15, 35, 0.60);
   pointer-events:none;
 }
-/* Pastikan main content area tidak punya background sendiri */
 .main-wrap, .container, .content-wrap, main, #main {
   background: transparent !important;
 }
@@ -122,88 +121,9 @@ body::before{
 .empty-state i{font-size:36px;color:rgba(255,255,255,0.50);display:block;margin-bottom:10px;}
 .empty-state p{font-size:14px;color:rgba(255,255,255,0.70);font-weight:700;}
 .empty-state a{color:#60a5fa;text-decoration:underline;}
-
-/* ── HERO BANNER ── */
-.hero-banner{
-  position:relative;
-  width:100%; height:260px;
-  border-radius:18px; overflow:hidden;
-  margin-bottom:28px;
-  background-image: url('library_bg.png');
-  background-size:cover; background-position:center 40%;
-  box-shadow:0 8px 32px rgba(30,58,95,0.22);
-}
-.hero-overlay{
-  position:absolute; inset:0;
-  background:linear-gradient(
-    to right,
-    rgba(10,25,60,0.82) 0%,
-    rgba(10,25,60,0.65) 50%,
-    rgba(10,25,60,0.25) 100%
-  );
-}
-.hero-content{
-  position:relative; z-index:1;
-  height:100%; padding:32px 40px;
-  display:flex; align-items:center;
-  justify-content:space-between; gap:20px;
-}
-.hero-left{ flex:1; }
-.hero-kicker{
-  font-size:11px; font-weight:800; letter-spacing:2.5px;
-  text-transform:uppercase; color:rgba(255,255,255,0.55);
-  margin-bottom:10px;
-}
-.hero-title{
-  font-family:'Syne',sans-serif;
-  font-size:clamp(26px,3vw,42px);
-  font-weight:900; color:#fff;
-  line-height:1.1; margin-bottom:10px;
-}
-.hero-title-accent{
-  color:#60a5fa;
-}
-.hero-desc{
-  font-size:13px; color:rgba(255,255,255,0.60);
-  font-weight:600; line-height:1.7;
-  max-width:420px; margin-bottom:20px;
-}
-.btn-hero{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:11px 24px; border-radius:8px;
-  background:#2563eb; color:#fff;
-  font-size:13px; font-weight:800;
-  text-decoration:none; font-family:'Nunito',sans-serif;
-  box-shadow:0 4px 16px rgba(37,99,211,0.40);
-  transition:all .2s;
-}
-.btn-hero:hover{ background:#1d4ed8; transform:translateY(-2px); }
-
-/* Hero stats (kanan) */
-.hero-stats{
-  display:flex; flex-direction:column; gap:12px;
-  background:rgba(255,255,255,0.10);
-  border:1px solid rgba(255,255,255,0.18);
-  border-radius:14px; padding:20px 24px;
-  backdrop-filter:blur(12px);
-  min-width:140px;
-}
-.hstat{ text-align:center; }
-.hstat-num{
-  font-family:'Syne',sans-serif;
-  font-size:28px; font-weight:900; color:#fff; line-height:1;
-}
-.hstat-lbl{
-  font-size:10px; font-weight:700;
-  color:rgba(255,255,255,0.50);
-  text-transform:uppercase; letter-spacing:1px;
-  margin-top:3px;
-}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 .fu1{animation:fadeUp .4s ease .04s both}.fu2{animation:fadeUp .4s ease .12s both}.fu3{animation:fadeUp .4s ease .20s both}.fu4{animation:fadeUp .4s ease .28s both}.fu5{animation:fadeUp .4s ease .36s both}
 </style>
-
-<!-- PAGE CONTENT -->
 
 <!-- PAGE HEADER -->
 <div class="page-header fu1">
@@ -217,29 +137,21 @@ body::before{
 <!-- STAT CARDS -->
 <div class="stat-row fu2">
 
-  <!-- Total Buku — Rak buku + bintang emas -->
   <a href="?<?= http_build_query(array_merge($_GET,['status'=>''])) ?>" class="stat-mini" style="border-top:3px solid #f9c74f;">
     <div style="display:flex;align-items:center;gap:14px;">
       <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48" style="flex-shrink:0;">
-        <defs>
-          <linearGradient id="g1a" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f9c74f"/><stop offset="100%" stop-color="#d4a017"/></linearGradient>
-        </defs>
-        <!-- Rak bawah -->
+        <defs><linearGradient id="g1a" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f9c74f"/><stop offset="100%" stop-color="#d4a017"/></linearGradient></defs>
         <rect x="4" y="42" width="48" height="5" rx="2" fill="url(#g1a)"/>
-        <!-- Buku 1 tebal navy -->
         <rect x="6" y="18" width="13" height="24" rx="2" fill="#0f2744" stroke="url(#g1a)" stroke-width="1.2"/>
         <rect x="6" y="18" width="3.5" height="24" rx="1" fill="url(#g1a)" opacity="0.8"/>
         <line x1="13" y1="24" x2="17" y2="24" stroke="#fff" stroke-width="0.9" opacity="0.5"/>
         <line x1="13" y1="28" x2="17" y2="28" stroke="#fff" stroke-width="0.9" opacity="0.5"/>
-        <!-- Buku 2 miring -->
         <rect x="21" y="22" width="9" height="20" rx="1.5" fill="#1e3a5f" stroke="url(#g1a)" stroke-width="1.1" transform="rotate(-6,25,32)"/>
-        <!-- Buku 3 -->
         <rect x="32" y="14" width="15" height="28" rx="2" fill="#0f2744" stroke="url(#g1a)" stroke-width="1.3"/>
         <rect x="32" y="14" width="4" height="28" rx="1" fill="url(#g1a)" opacity="0.9"/>
         <line x1="39" y1="20" x2="45" y2="20" stroke="#fff" stroke-width="0.9" opacity="0.5"/>
         <line x1="39" y1="25" x2="45" y2="25" stroke="#fff" stroke-width="0.9" opacity="0.5"/>
         <line x1="39" y1="30" x2="43" y2="30" stroke="#fff" stroke-width="0.9" opacity="0.4"/>
-        <!-- Bintang ornamen -->
         <polygon points="28,4 30,10 36,10 31,14 33,20 28,16 23,20 25,14 20,10 26,10" fill="url(#g1a)"/>
       </svg>
       <div>
@@ -249,24 +161,16 @@ body::before{
     </div>
   </a>
 
-  <!-- Tersedia — Mahkota emas -->
   <a href="?<?= http_build_query(array_merge($_GET,['status'=>'tersedia'])) ?>" class="stat-mini" style="border-top:3px solid #f9c74f;">
     <div style="display:flex;align-items:center;gap:14px;">
       <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48" style="flex-shrink:0;">
-        <defs>
-          <linearGradient id="g2a" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f9c74f"/><stop offset="100%" stop-color="#d4a017"/></linearGradient>
-        </defs>
-        <!-- Mahkota -->
+        <defs><linearGradient id="g2a" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f9c74f"/><stop offset="100%" stop-color="#d4a017"/></linearGradient></defs>
         <path d="M8,38 L10,18 L22,30 L28,10 L34,30 L46,18 L48,38 Z" fill="url(#g2a)" stroke="#d4a017" stroke-width="1" stroke-linejoin="round"/>
-        <!-- Alas mahkota -->
         <rect x="6" y="36" width="44" height="10" rx="3" fill="url(#g2a)" stroke="#d4a017" stroke-width="0.8"/>
-        <!-- Permata tengah -->
         <circle cx="28" cy="22" r="5" fill="#fff" opacity="0.95"/>
         <circle cx="28" cy="22" r="3" fill="#f9c74f"/>
-        <!-- Permata kiri kanan -->
         <circle cx="13" cy="30" r="3" fill="#fff" opacity="0.8"/>
         <circle cx="43" cy="30" r="3" fill="#fff" opacity="0.8"/>
-        <!-- Centang di alas -->
         <polyline points="20,40 26,44 36,37" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
       </svg>
       <div>
@@ -276,27 +180,16 @@ body::before{
     </div>
   </a>
 
-  <!-- Stok Habis — Jam pasir emas -->
   <a href="?<?= http_build_query(array_merge($_GET,['status'=>''])) ?>" class="stat-mini" style="border-top:3px solid #f9c74f;">
     <div style="display:flex;align-items:center;gap:14px;">
       <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48" style="flex-shrink:0;">
-        <defs>
-          <linearGradient id="g3a" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f9c74f"/><stop offset="100%" stop-color="#d4a017"/></linearGradient>
-        </defs>
-        <!-- Batang atas bawah -->
+        <defs><linearGradient id="g3a" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f9c74f"/><stop offset="100%" stop-color="#d4a017"/></linearGradient></defs>
         <rect x="10" y="4" width="36" height="7" rx="3" fill="url(#g3a)"/>
         <rect x="10" y="45" width="36" height="7" rx="3" fill="url(#g3a)"/>
-        <!-- Badan jam pasir -->
         <path d="M14,11 L42,11 L30,28 L42,45 L14,45 L26,28 Z" fill="#0f2744" stroke="url(#g3a)" stroke-width="1.3" stroke-linejoin="round"/>
-        <!-- Pasir atas sedikit -->
         <path d="M15,11 L41,11 L29,22 L27,22 Z" fill="url(#g3a)" opacity="0.75"/>
-        <!-- Pasir bawah menumpuk -->
         <path d="M27,34 L29,34 L40,45 L16,45 Z" fill="url(#g3a)" opacity="0.90"/>
-        <!-- Titik tengah -->
         <circle cx="28" cy="28" r="3" fill="url(#g3a)"/>
-        <!-- Garis dashed samping -->
-        <line x1="8" y1="11" x2="8" y2="45" stroke="#f9c74f" stroke-width="0.7" stroke-dasharray="3,3" opacity="0.4"/>
-        <line x1="48" y1="11" x2="48" y2="45" stroke="#f9c74f" stroke-width="0.7" stroke-dasharray="3,3" opacity="0.4"/>
       </svg>
       <div>
         <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#fff;line-height:1;"><?= $total_habis ?></div>
@@ -305,31 +198,18 @@ body::before{
     </div>
   </a>
 
-  <!-- Diarsipkan — Dokumen dengan pita emas -->
   <a href="?<?= http_build_query(array_merge($_GET,['status'=>'arsip'])) ?>" class="stat-mini" style="border-top:3px solid #f9c74f;">
     <div style="display:flex;align-items:center;gap:14px;">
       <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48" style="flex-shrink:0;">
-        <defs>
-          <linearGradient id="g4a" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f9c74f"/><stop offset="100%" stop-color="#d4a017"/></linearGradient>
-        </defs>
-        <!-- Dokumen -->
+        <defs><linearGradient id="g4a" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f9c74f"/><stop offset="100%" stop-color="#d4a017"/></linearGradient></defs>
         <rect x="10" y="4" width="32" height="42" rx="3" fill="#0f2744" stroke="url(#g4a)" stroke-width="1.3"/>
-        <!-- Lipatan pojok -->
         <path d="M30,4 L42,16 L30,16 Z" fill="#1e3a5f" stroke="url(#g4a)" stroke-width="1"/>
         <path d="M30,4 L42,16" stroke="url(#g4a)" stroke-width="1.3"/>
-        <!-- Garis isi dokumen -->
         <line x1="16" y1="22" x2="28" y2="22" stroke="#fff" stroke-width="1" opacity="0.6"/>
         <line x1="16" y1="27" x2="30" y2="27" stroke="#fff" stroke-width="1" opacity="0.6"/>
         <line x1="16" y1="32" x2="24" y2="32" stroke="#fff" stroke-width="1" opacity="0.4"/>
-        <!-- Pita emas -->
         <rect x="8" y="34" width="40" height="8" rx="2" fill="url(#g4a)"/>
-        <!-- Simpul pita -->
-        <path d="M24,38 C18,32 18,44 24,38" fill="url(#g4a)" stroke="#0f172a" stroke-width="0.8"/>
-        <path d="M32,38 C38,32 38,44 32,38" fill="url(#g4a)" stroke="#0f172a" stroke-width="0.8"/>
         <circle cx="28" cy="38" r="3.5" fill="#d4a017" stroke="#0f172a" stroke-width="0.8"/>
-        <!-- Ekor pita -->
-        <path d="M22,42 L16,50" stroke="url(#g4a)" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M34,42 L40,50" stroke="url(#g4a)" stroke-width="2.5" stroke-linecap="round"/>
       </svg>
       <div>
         <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#fff;line-height:1;"><?= $total_arsip ?></div>
@@ -396,14 +276,14 @@ if ($msg && isset($msgs[$msg])): [$ok,$txt]=$msgs[$msg]; ?>
     </thead>
     <tbody>
       <?php foreach($buku_list as $i=>$b):
-        $gw=$genre_warna[$b['genre']]??['bg'=>'#1e3a5f','icon'=>'📚']; ?>
+        $gw=$genre_warna[$b['genre']]??['bg'=>'#1e3a5f','icon'=>'fa-book']; ?>
       <tr data-judul="<?= strtolower($b['judul']) ?>" data-penulis="<?= strtolower($b['penulis']) ?>">
         <td style="color:rgba(255,255,255,0.55);font-size:12px;font-weight:700;text-align:center;"><?= $i+1 ?></td>
         <td>
           <div style="display:flex;align-items:center;gap:10px;">
             <?php if(!empty($b['cover'])): ?>
             <div class="mini-cover" style="background:#0f2744;padding:0;overflow:hidden;">
-              <img src="/Web_Cloud_Computing/uploads/covers/<?= e($b['cover']) ?>"
+              <img src="<?= BASE_URL ?>/uploads/covers/<?= e($b['cover']) ?>"
                    style="width:100%;height:100%;object-fit:cover;border-radius:6px;" alt="cover">
             </div>
             <?php else: ?>
