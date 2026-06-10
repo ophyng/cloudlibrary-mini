@@ -87,8 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $logs = $pdo->query("SELECT * FROM broadcast_log ORDER BY created_at DESC LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
 
 // ── Header layout ────────────────────────────
-$pageTitle = 'Broadcast Notifikasi';
-require_once 'partials/header.php';
+$title = 'Broadcast Notifikasi — Super Admin CloudLibrary Mini';
+include '../includes/navbar.php';
 ?>
 <style>
 body{
