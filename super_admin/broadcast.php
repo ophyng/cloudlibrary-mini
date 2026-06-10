@@ -94,7 +94,7 @@ include '../includes/navbar.php';
 body{
   font-family:'Nunito',sans-serif;min-height:100vh;overflow-x:hidden;position:relative;margin:0;
   background:#dce8f5;
-  background-image:url('../gambar_library.jpg');
+  background-image:url('gambar_library.jpg');
   background-size:cover;background-position:center;background-attachment:fixed;background-repeat:no-repeat;
   color:#1a2744 !important;
 }
