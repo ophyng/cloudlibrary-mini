@@ -18,6 +18,12 @@ COPY . /var/www/html/
 
 RUN chown -R www-data:www-data /var/www/html/ && chmod -R 755 /var/www/html/
 
+RUN mkdir -p /var/www/html/uploads/covers \
+    /var/www/html/uploads/foto_profil \
+    /var/www/html/ebooks \
+    && chown -R www-data:www-data /var/www/html/uploads \
+    && chmod -R 777 /var/www/html/uploads
+
 EXPOSE 80
 
 CMD ["apache2-foreground"]
