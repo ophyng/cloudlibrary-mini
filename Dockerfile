@@ -24,6 +24,7 @@ RUN mkdir -p /var/www/html/uploads/covers \
     && chown -R www-data:www-data /var/www/html/uploads \
     && chmod -R 777 /var/www/html/uploads
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 EXPOSE 80
-
-CMD ["apache2-foreground"]
+CMD ["/entrypoint.sh"]
