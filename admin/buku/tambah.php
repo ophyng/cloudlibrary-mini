@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($cfile['size'] > 2 * 1024 * 1024) {
             $pesan = "Ukuran cover maksimal 2MB."; $pesan_type = 'danger';
         } else {
-            $covers_dir = $_SERVER['DOCUMENT_ROOT'] . '/Web_Cloud_Computing/uploads/covers/';
+           $covers_dir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/covers/';
             if (!is_dir($covers_dir)) mkdir($covers_dir, 0755, true);
             $cover_filename = 'cover_' . time() . '_' . uniqid() . '.' . $cext;
             if (!move_uploaded_file($cfile['tmp_name'], $covers_dir . $cover_filename)) {
