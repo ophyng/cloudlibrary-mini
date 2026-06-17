@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['foto_profil']) && $_
     } elseif ($file['size'] > 2 * 1024 * 1024) {
         $pesan = "Ukuran foto maksimal 2MB."; $pesan_type = 'danger';
     } else {
-        $folder = $_SERVER['DOCUMENT_ROOT'] . '/Web_Cloud_Computing/uploads/foto_profil/';
+        $folder = $_SERVER['DOCUMENT_ROOT'] . '/uploads/foto_profil/';
         if (!is_dir($folder)) mkdir($folder, 0755, true);
         // Hapus foto lama
         if (!empty($user['foto_profil']) && file_exists($folder . $user['foto_profil'])) {
