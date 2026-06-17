@@ -4,8 +4,6 @@
 //  File   : mahasiswa/profil.php
 // ============================================
 session_start();
-echo $_SERVER['DOCUMENT_ROOT']; // TAMBAH INI
-die(); // stop dulu biar keliatan  ← INI BIKIN HALAMAN MATI
 require_once '../includes/functions.php';
 
 $user_id = $_SESSION['user_id'];
