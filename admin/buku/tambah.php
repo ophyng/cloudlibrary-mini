@@ -14,7 +14,7 @@ $pesan = $pesan_type = '';
 $form  = ['judul'=>'','penulis'=>'','kategori_id'=>'','genre'=>'','tipe'=>'fiksi',
           'deskripsi'=>'','file_pdf'=>'','tahun'=>'','bahasa'=>'Inggris','stok'=>1];
 
-$ebooks_dir = $_SERVER['DOCUMENT_ROOT'] . '/Web_Cloud_Computing/ebooks/';
+$ebooks_dir = $_SERVER['DOCUMENT_ROOT'] . '/ebooks/';
 if (!is_dir($ebooks_dir)) mkdir($ebooks_dir, 0755, true);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
