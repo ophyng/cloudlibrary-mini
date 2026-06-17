@@ -2,6 +2,7 @@
 // ============================================
 //  CloudLibrary Mini — Admin: Tambah Buku
 //  File   : admin/buku/tambah.php
+//  Fix    : Manual id generation untuk TiDB (tidak support AUTO_INCREMENT via ALTER)
 // ============================================
 session_start();
 require_once '../../includes/functions.php';
@@ -49,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Upload Cover (TAMBAHAN)
+    // Upload Cover
     $cover_filename = null;
     if (!$pesan && !empty($_FILES['cover']['name'])) {
         $cfile = $_FILES['cover'];
@@ -74,10 +75,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pesan = "Judul, penulis, genre, dan file PDF wajib diisi.";
             $pesan_type = 'danger';
         } else {
+            // =====================================================
+            // FIX TiDB: generate id manual karena tidak support
+            // AUTO_INCREMENT via ALTER TABLE di Serverless tier
+            // =====================================================
+            $newId = (int) $pdo->query("SELECT COALESCE(MAX(id), 0) + 1 FROM buku")->fetchColumn();
+
             $pdo->prepare("
-                INSERT INTO buku (judul, penulis, kategori_id, genre, tipe, deskripsi, file_pdf, cover, tahun, bahasa, stok, is_featured, status, created_at)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'tersedia',NOW())
+                INSERT INTO buku (id, judul, penulis, kategori_id, genre, tipe, deskripsi, file_pdf, cover, tahun, bahasa, stok, is_featured, status, created_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'tersedia',NOW())
             ")->execute([
+                $newId,
                 $form['judul'], $form['penulis'], $form['kategori_id'] ?: null,
                 $form['genre'], $form['tipe'], $form['deskripsi'],
                 $form['file_pdf'], $cover_filename,
@@ -185,7 +193,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:rgba(5,15,35
 .tab-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
 .tab-btn.active{background:rgba(249,199,79,0.15);border-color:#f9c74f;color:#f9c74f;}
 
-/* Cover upload (TAMBAHAN) */
+/* Cover upload */
 .cover-upload-row{display:grid;grid-template-columns:180px 1fr;gap:20px;align-items:start;}
 @media(max-width:600px){.cover-upload-row{grid-template-columns:1fr;}}
 .cover-drop{width:180px;height:252px;border:2px dashed rgba(255,255,255,0.22);border-radius:12px;cursor:pointer;transition:all .2s;background:rgba(255,255,255,0.05);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;}
@@ -341,13 +349,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:rgba(5,15,35
       </div>
     </div>
 
-    <!-- COVER BUKU (TAMBAHAN) -->
+    <!-- COVER BUKU -->
     <div class="form-card">
       <h3><i class="fas fa-image"></i> Cover Buku <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.40);margin-left:6px;">(opsional)</span></h3>
       <input type="file" name="cover" id="coverInput" accept="image/*" style="display:none" onchange="previewCover(this)">
       <div class="cover-upload-row">
 
-        <!-- Drop area kiri -->
         <div>
           <div class="cover-drop" id="coverDrop" onclick="document.getElementById('coverInput').click()">
             <img id="coverPreviewImg" src="" alt="Cover Preview">
@@ -370,7 +377,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:rgba(5,15,35
           </div>
         </div>
 
-        <!-- Tips kanan -->
         <div>
           <div style="background:rgba(249,199,79,0.08);border:1px solid rgba(249,199,79,0.20);border-radius:12px;padding:14px 16px;">
             <div style="font-size:11px;font-weight:900;color:#f9c74f;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
